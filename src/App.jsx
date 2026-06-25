@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState, useCallback } from "react";
-import { motion, AnimatePresence, useInView, useScroll, useTransform } from "framer-motion";
+import { useRef, useState, useCallback, useMemo } from "react";
+import { motion, AnimatePresence, useInView } from "framer-motion";
 import confetti from "canvas-confetti";
 import Typewriter from "typewriter-effect";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay, Pagination, EffectCards, Navigation, EffectCreative } from "swiper/modules";
+import { Autoplay, Pagination, EffectCards, Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/effect-cards";
@@ -40,7 +40,6 @@ const PHOTOS = [
     author: "— from your Rua, with love",
     theme: "teal",
   },
-
   {
     src: "/images/P5.jpeg",
     quote: "Unguarded, unfiltered — this is the version I love most.",
@@ -65,7 +64,6 @@ const PHOTOS = [
     author: "— always, Rua",
     theme: "rose",
   },
-
   {
     src: "/images/P9.jpeg",
     quote: "Your kindness is the quiet revolution that changes everything around you.",
@@ -109,59 +107,31 @@ const TIMELINE = [
   { year: "Forever", label: "Every year with you is my favourite year yet", icon: "✨" },
 ];
 
-// ─── FLOATING PETALS ───────────────────────────────────────────────────────
-function FloatingPetals() {
-  const petals = Array.from({ length: 16 }, (_, i) => ({
+// ─── STATIC STAR FIELD (CSS only, no JS animation loop) ────────────────────
+function StarField() {
+  // Pre-computed — no random on each render, no motion on scroll
+  const stars = useMemo(() => Array.from({ length: 55 }, (_, i) => ({
     id: i,
-    left: `${Math.random() * 100}%`,
-    delay: Math.random() * 6,
-    duration: 5 + Math.random() * 5,
-    size: 10 + Math.random() * 14,
-    symbol: ["🌸", "✨", "💛", "🌷", "⭐", "💫", "🌺", "✦"][i % 8],
-    rotate: Math.random() * 360,
-  }));
+    left: `${(i * 17.3) % 100}%`,
+    top:  `${(i * 23.7) % 100}%`,
+    size: ((i % 3) + 1) * 1.5,
+    delay: `${(i * 0.37) % 4}s`,
+    dur:   `${2.5 + (i % 3)}s`,
+  })), []);
 
   return (
-    <div className="petals-layer" aria-hidden="true">
-      {petals.map((p) => (
-        <motion.span
-          key={p.id}
-          className="petal"
-          style={{ left: p.left, fontSize: p.size }}
-          initial={{ y: -40, opacity: 0, rotate: 0 }}
-          animate={{ y: "110vh", opacity: [0, 0.8, 0.8, 0], rotate: p.rotate }}
-          transition={{
-            duration: p.duration,
-            repeat: Infinity,
-            delay: p.delay,
-            ease: "linear",
-          }}
-        >
-          {p.symbol}
-        </motion.span>
-      ))}
-    </div>
-  );
-}
-
-// ─── GOLDEN ORBS ──────────────────────────────────────────────────────────
-function GoldenOrbs() {
-  return (
-    <div className="orbs-bg" aria-hidden="true">
-      {[...Array(5)].map((_, i) => (
-        <motion.div
-          key={i}
-          className={`orb orb-${i + 1}`}
-          animate={{
-            x: [0, 30, -20, 0],
-            y: [0, -40, 20, 0],
-            scale: [1, 1.15, 0.95, 1],
-          }}
-          transition={{
-            duration: 8 + i * 2,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: i * 1.2,
+    <div className="star-field" aria-hidden="true">
+      {stars.map(s => (
+        <span
+          key={s.id}
+          className="star"
+          style={{
+            left: s.left,
+            top: s.top,
+            width: s.size,
+            height: s.size,
+            animationDelay: s.delay,
+            animationDuration: s.dur,
           }}
         />
       ))}
@@ -169,26 +139,30 @@ function GoldenOrbs() {
   );
 }
 
-// ─── COUNTDOWN HEARTS ─────────────────────────────────────────────────────
+// ─── STATIC GRADIENT BLOBS (pure CSS, no framer-motion on fixed layer) ─────
+function GradientBlobs() {
+  return <div className="gradient-blobs" aria-hidden="true" />;
+}
+
+// ─── HEART RAIN (only on cover/hero, not fixed) ────────────────────────────
 function HeartRain() {
-  const items = Array.from({ length: 12 }, (_, i) => ({
+  const items = useMemo(() => Array.from({ length: 10 }, (_, i) => ({
     id: i,
-    left: `${8 * i + Math.random() * 4}%`,
-    delay: i * 0.25,
-    size: 14 + Math.floor(Math.random() * 14),
+    left: `${9 * i + 3}%`,
+    delay: i * 0.28,
+    size: 14 + (i % 4) * 4,
     color: ["#ff6b9d", "#ffd07a", "#c084fc", "#6ee7b7", "#f97316"][i % 5],
-  }));
+  })), []);
+
   return (
     <div className="heart-rain">
       {items.map((h) => (
         <motion.span
           key={h.id}
-          style={{ left: h.left, fontSize: h.size, color: h.color, position: "absolute" }}
-          animate={{ y: [0, -90, -180], opacity: [0, 1, 0], rotate: [0, 12, -12] }}
-          transition={{ duration: 3.5, repeat: Infinity, delay: h.delay, ease: "easeOut" }}
-        >
-          ♥
-        </motion.span>
+          style={{ left: h.left, fontSize: h.size, color: h.color }}
+          animate={{ y: [0, -100, -200], opacity: [0, 1, 0] }}
+          transition={{ duration: 3.2, repeat: Infinity, delay: h.delay, ease: "easeOut" }}
+        >♥</motion.span>
       ))}
     </div>
   );
@@ -197,30 +171,19 @@ function HeartRain() {
 // ─── PHOTO CARD ────────────────────────────────────────────────────────────
 function PhotoCard({ photo, index }) {
   const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-80px" });
+  const inView = useInView(ref, { once: true, margin: "-60px" });
   const [flipped, setFlipped] = useState(false);
-
-  const themeColors = {
-    rose: "var(--rose)",
-    violet: "var(--violet)",
-    teal: "var(--teal)",
-    gold: "var(--gold)",
-    coral: "var(--coral)",
-    sky: "var(--sky)",
-  };
 
   return (
     <motion.div
       ref={ref}
       className={`photo-card theme-${photo.theme}`}
-      initial={{ opacity: 0, y: 100, rotate: index % 2 === 0 ? -3 : 3 }}
-      animate={inView ? { opacity: 1, y: 0, rotate: 0 } : {}}
-      transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1], delay: index * 0.06 }}
-      style={{ "--card-accent": themeColors[photo.theme] }}
+      initial={{ opacity: 0, y: 60 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: Math.min(index * 0.05, 0.3) }}
       onClick={() => setFlipped(!flipped)}
     >
       <div className={`card-flip-inner ${flipped ? "is-flipped" : ""}`}>
-        {/* FRONT */}
         <div className="card-face card-front">
           <div className="photo-frame">
             <img src={photo.src} alt={`Memory — ${photo.memory}`} loading="lazy" />
@@ -236,8 +199,6 @@ function PhotoCard({ photo, index }) {
             <span className="tap-hint">tap to read 💌</span>
           </div>
         </div>
-
-        {/* BACK */}
         <div className="card-face card-back">
           <div className="card-back-content">
             <p className="back-big-quote">❝</p>
@@ -255,24 +216,17 @@ function PhotoCard({ photo, index }) {
 // ─── REASON CARD ───────────────────────────────────────────────────────────
 function ReasonCard({ reason, index }) {
   const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-40px" });
+  const inView = useInView(ref, { once: true, margin: "-30px" });
   return (
     <motion.div
       ref={ref}
       className="reason-card"
-      initial={{ opacity: 0, x: index % 2 === 0 ? -60 : 60 }}
-      animate={inView ? { opacity: 1, x: 0 } : {}}
-      transition={{ duration: 0.85, delay: index * 0.1 }}
-      whileHover={{ scale: 1.025, y: -4 }}
+      initial={{ opacity: 0, y: 30 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.6, delay: Math.min(index * 0.07, 0.35) }}
     >
       <div className="reason-icon-wrap">
-        <motion.span
-          className="reason-icon"
-          animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.1, 1] }}
-          transition={{ duration: 4, repeat: Infinity, delay: index * 0.5 }}
-        >
-          {reason.icon}
-        </motion.span>
+        <span className="reason-icon">{reason.icon}</span>
       </div>
       <div className="reason-body">
         <h4 className="reason-title">{reason.title}</h4>
@@ -285,18 +239,16 @@ function ReasonCard({ reason, index }) {
 // ─── TIMELINE ITEM ─────────────────────────────────────────────────────────
 function TimelineItem({ item, index }) {
   const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-40px" });
+  const inView = useInView(ref, { once: true, margin: "-30px" });
   return (
     <motion.div
       ref={ref}
       className={`timeline-item ${index % 2 === 0 ? "tl-left" : "tl-right"}`}
-      initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
-      animate={inView ? { opacity: 1, x: 0 } : {}}
-      transition={{ duration: 0.8, delay: index * 0.12 }}
+      initial={{ opacity: 0, y: 24 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.6, delay: index * 0.1 }}
     >
-      <div className="tl-dot">
-        <span>{item.icon}</span>
-      </div>
+      <div className="tl-dot"><span>{item.icon}</span></div>
       <div className="tl-card">
         <span className="tl-year">{item.year}</span>
         <p className="tl-label">{item.label}</p>
@@ -308,76 +260,57 @@ function TimelineItem({ item, index }) {
 // ─── MAIN APP ──────────────────────────────────────────────────────────────
 export default function App() {
   const [revealed, setRevealed] = useState(false);
-  const { scrollY } = useScroll();
-  const heroOpacity = useTransform(scrollY, [0, 500], [1, 0]);
-  const heroScale = useTransform(scrollY, [0, 500], [1, 0.9]);
 
   const fireConfetti = useCallback(() => {
-    const end = Date.now() + 5000;
+    const end = Date.now() + 4500;
     const colors = ["#ff6b9d", "#ffd07a", "#c084fc", "#6ee7b7", "#f97316", "#ffffff"];
     const frame = () => {
-      confetti({
-        particleCount: 7,
-        angle: 60,
-        spread: 80,
-        origin: { x: 0, y: 0.7 },
-        colors,
-        shapes: ["circle", "square"],
-      });
-      confetti({
-        particleCount: 7,
-        angle: 120,
-        spread: 80,
-        origin: { x: 1, y: 0.7 },
-        colors,
-        shapes: ["circle", "square"],
-      });
+      confetti({ particleCount: 6, angle: 60,  spread: 75, origin: { x: 0,   y: 0.7 }, colors, shapes: ["circle", "square"] });
+      confetti({ particleCount: 6, angle: 120, spread: 75, origin: { x: 1,   y: 0.7 }, colors, shapes: ["circle", "square"] });
       if (Date.now() < end) requestAnimationFrame(frame);
     };
     frame();
-    confetti({
-      particleCount: 120,
-      spread: 120,
-      origin: { x: 0.5, y: 0.55 },
-      colors: ["#ff6b9d", "#ffd07a", "#fff"],
-      shapes: ["circle"],
-      scalar: 1.3,
-    });
+    confetti({ particleCount: 100, spread: 110, origin: { x: 0.5, y: 0.55 }, colors: ["#ff6b9d", "#ffd07a", "#fff"], shapes: ["circle"], scalar: 1.2 });
   }, []);
 
   const handleReveal = () => {
     setRevealed(true);
-    setTimeout(fireConfetti, 700);
+    setTimeout(fireConfetti, 600);
   };
 
   return (
     <div className="app">
-      <GoldenOrbs />
-      <FloatingPetals />
+      <GradientBlobs />
+      <StarField />
 
-      {/* ── COVER / HERO ──────────────────────────────────────── */}
+      {/* ── COVER / HERO ── */}
       <AnimatePresence mode="wait">
         {!revealed ? (
           <motion.section
             key="cover"
             className="cover"
-            exit={{ opacity: 0, scale: 1.2, filter: "blur(24px)" }}
-            transition={{ duration: 1 }}
+            exit={{ opacity: 0, scale: 1.15, filter: "blur(20px)" }}
+            transition={{ duration: 0.85 }}
           >
             <div className="cover-center">
               <motion.div
                 className="cover-emblem"
-                animate={{ rotate: [0, 8, -8, 0], scale: [1, 1.06, 1] }}
-                transition={{ duration: 3, repeat: Infinity }}
+                animate={{ scale: [1, 1.06, 1] }}
+                transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
               >
                 <span className="cover-cake">🎂</span>
+                <div className="cover-sparkles">
+                  {["✦","✦","✦","✦","✦","✦"].map((s, i) => (
+                    <span key={i} className={`spark spark-${i}`}>{s}</span>
+                  ))}
+                </div>
               </motion.div>
 
               <motion.h1
                 className="cover-headline"
-                initial={{ opacity: 0, y: 40 }}
+                initial={{ opacity: 0, y: 36 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4, duration: 0.9 }}
+                transition={{ delay: 0.35, duration: 0.8 }}
               >
                 Someone extraordinary
                 <br />
@@ -388,7 +321,7 @@ export default function App() {
                 className="cover-sub"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.8 }}
+                transition={{ delay: 0.7 }}
               >
                 And the universe prepared something just for them 🌙
               </motion.p>
@@ -396,13 +329,13 @@ export default function App() {
               <motion.button
                 className="reveal-btn"
                 onClick={handleReveal}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 18 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.1 }}
-                whileHover={{ scale: 1.07, boxShadow: "0 0 60px rgba(255,107,157,0.8)" }}
-                whileTap={{ scale: 0.94 }}
+                transition={{ delay: 1.0 }}
+                whileHover={{ scale: 1.06 }}
+                whileTap={{ scale: 0.95 }}
               >
-                Open Your Surprise&nbsp; 🎁
+                Open Your Surprise 🎁
               </motion.button>
 
               <HeartRain />
@@ -414,26 +347,23 @@ export default function App() {
             className="hero"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 1 }}
+            transition={{ duration: 0.9 }}
           >
-            <motion.div
-              className="hero-inner"
-              style={{ opacity: heroOpacity, scale: heroScale }}
-            >
+            <div className="hero-inner">
               <motion.span
                 className="hero-eyebrow"
-                initial={{ opacity: 0, y: -20 }}
+                initial={{ opacity: 0, y: -16 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
+                transition={{ delay: 0.15 }}
               >
-                ✦ twenty-four ✦
+                ✦ Happy-Birthday ✦
               </motion.span>
 
               <motion.h1
                 className="hero-name"
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 28 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4, duration: 0.9 }}
+                transition={{ delay: 0.3, duration: 0.85 }}
               >
                 {LOVE_NAME}
               </motion.h1>
@@ -442,21 +372,18 @@ export default function App() {
                 className="hero-typewriter"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.8 }}
+                transition={{ delay: 0.7 }}
               >
                 <Typewriter
-                  options={{ delay: 42, cursor: "♡", loop: true }}
+                  options={{ delay: 40, cursor: "♡", loop: true }}
                   onInit={(tw) =>
                     tw
                       .typeString("My favourite person in the entire world.")
-                      .pauseFor(1800)
-                      .deleteAll(30)
+                      .pauseFor(1800).deleteAll(28)
                       .typeString("The one who makes everything make sense.")
-                      .pauseFor(1800)
-                      .deleteAll(30)
+                      .pauseFor(1800).deleteAll(28)
                       .typeString("Happy 24th birthday, my love. 🥂")
-                      .pauseFor(2200)
-                      .deleteAll(30)
+                      .pauseFor(2200).deleteAll(28)
                       .start()
                   }
                 />
@@ -466,7 +393,7 @@ export default function App() {
                 className="hero-from"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 1.4 }}
+                transition={{ delay: 1.3 }}
               >
                 <span>with all my love,</span>
                 <strong> {FROM_NAME}</strong>
@@ -476,46 +403,32 @@ export default function App() {
                 className="hero-icons"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 1.6 }}
+                transition={{ delay: 1.5 }}
               >
-                {["💛", "🌙", "✨", "🌸", "💛"].map((ic, i) => (
-                  <motion.span
-                    key={i}
-                    animate={{ y: [0, -12, 0], rotate: [0, 9, -9, 0] }}
-                    transition={{
-                      duration: 2.5 + i * 0.2,
-                      repeat: Infinity,
-                      delay: i * 0.18,
-                    }}
-                  >
-                    {ic}
-                  </motion.span>
+                {["💛","🌙","✨","🌸","💛"].map((ic, i) => (
+                  <span key={i} className={`hero-icon hi-${i}`}>{ic}</span>
                 ))}
               </motion.div>
 
               <HeartRain />
-            </motion.div>
+            </div>
           </motion.section>
         )}
       </AnimatePresence>
 
-      {/* ── REST OF PAGE ─────────────────────────────────────── */}
+      {/* ── CONTENT ── */}
       <AnimatePresence>
         {revealed && (
           <motion.div
             key="content"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 1.8, duration: 1 }}
+            transition={{ delay: 1.7, duration: 0.9 }}
           >
-            {/* ── TIMELINE ── */}
+            {/* TIMELINE */}
             <section className="section timeline-section">
-              <div className="section-header" data-inview>
-                <motion.div
-                  initial={{ opacity: 0, y: 40 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                >
+              <div className="section-header">
+                <motion.div initial={{ opacity: 0, y: 36 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
                   <span className="section-eyebrow">the story of you</span>
                   <h2 className="section-title">A Journey Worth Celebrating</h2>
                   <p className="section-sub">Twenty-four years of becoming someone the world needed 🌙</p>
@@ -523,40 +436,33 @@ export default function App() {
               </div>
               <div className="timeline">
                 <div className="tl-line" />
-                {TIMELINE.map((item, i) => (
-                  <TimelineItem key={i} item={item} index={i} />
-                ))}
+                {TIMELINE.map((item, i) => <TimelineItem key={i} item={item} index={i} />)}
               </div>
             </section>
 
-            {/* ── SWIPER CAROUSEL ── */}
+            {/* SWIPER */}
             <section className="section slider-section">
               <div className="section-header">
-                <motion.div
-                  initial={{ opacity: 0, y: 40 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                >
+                <motion.div initial={{ opacity: 0, y: 36 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
                   <span className="section-eyebrow">our most precious frames</span>
                   <h2 className="section-title">Every Picture, a Feeling</h2>
                   <p className="section-sub">Moments I would trade nothing in the world for 🌙</p>
                 </motion.div>
               </div>
-
               <div className="swiper-outer">
                 <Swiper
                   modules={[Autoplay, Pagination, EffectCards, Navigation]}
                   effect="cards"
                   grabCursor
                   centeredSlides
-                  autoplay={{ delay: 2600, disableOnInteraction: false }}
+                  autoplay={{ delay: 2800, disableOnInteraction: false, pauseOnMouseEnter: true }}
                   pagination={{ clickable: true }}
                   navigation
                   className="bday-swiper"
                 >
                   {PHOTOS.map((photo, i) => (
                     <SwiperSlide key={i} className="bday-slide">
-                      <img src={photo.src} alt={`Slide ${i + 1}`} />
+                      <img src={photo.src} alt={`Slide ${i + 1}`} loading="lazy" />
                       <div className="slide-glass">
                         <p className="slide-quote">❝ {photo.quote} ❞</p>
                         <span className="slide-memory">{photo.memory}</span>
@@ -567,68 +473,45 @@ export default function App() {
               </div>
             </section>
 
-            {/* ── PHOTO GRID (flip cards) ── */}
+            {/* FLIP CARDS */}
             <section className="section photos-section">
               <div className="section-header">
-                <motion.div
-                  initial={{ opacity: 0, y: 40 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                >
+                <motion.div initial={{ opacity: 0, y: 36 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
                   <span className="section-eyebrow">letters i never sent</span>
                   <h2 className="section-title">Until Now.</h2>
-                  <p className="section-sub">
-                    Tap each card to read what my heart has been holding 🤍
-                  </p>
+                  <p className="section-sub">Tap each card to read what my heart has been holding 🤍</p>
                 </motion.div>
               </div>
-
               <div className="photos-grid">
-                {PHOTOS.map((photo, i) => (
-                  <PhotoCard key={i} photo={photo} index={i} />
-                ))}
+                {PHOTOS.map((photo, i) => <PhotoCard key={i} photo={photo} index={i} />)}
               </div>
             </section>
 
-            {/* ── REASONS ── */}
+            {/* REASONS */}
             <section className="section reasons-section">
               <div className="section-header">
-                <motion.div
-                  initial={{ opacity: 0, y: 40 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                >
+                <motion.div initial={{ opacity: 0, y: 36 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
                   <span className="section-eyebrow">why you are irreplaceable</span>
                   <h2 className="section-title">A List I Could Write Forever</h2>
                   <p className="section-sub">And still never finish 💛</p>
                 </motion.div>
               </div>
               <div className="reasons-grid">
-                {REASONS.map((r, i) => (
-                  <ReasonCard key={i} reason={r} index={i} />
-                ))}
+                {REASONS.map((r, i) => <ReasonCard key={i} reason={r} index={i} />)}
               </div>
             </section>
 
-            {/* ── FINALE ── */}
+            {/* FINALE */}
             <section className="section finale-section">
               <motion.div
                 className="finale-card"
-                initial={{ opacity: 0, y: 80 }}
+                initial={{ opacity: 0, y: 60 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
               >
-                <motion.div
-                  className="finale-glow-icon"
-                  animate={{ scale: [1, 1.12, 1], rotate: [0, 5, -5, 0] }}
-                  transition={{ duration: 4, repeat: Infinity }}
-                >
-                  💛
-                </motion.div>
-
+                <div className="finale-glow-icon">💛</div>
                 <h2 className="finale-heading">Here's to you, Arshad.</h2>
-
                 <p className="finale-body">
                   Twenty-four years ago, the world got a little louder, a little warmer, and a whole lot
                   more beautiful — and I don't think it has recovered since. You are the kind of person
@@ -641,44 +524,36 @@ export default function App() {
                   <br /><br />
                   Happy 24th birthday, my love. 🥂
                 </p>
-
                 <div className="finale-from">
                   <span>With every piece of me,</span>
                   <strong> {FROM_NAME} 💛</strong>
                 </div>
-
                 <div className="finale-stamp">
                   <motion.div
                     className="stamp-ring"
                     animate={{ rotate: 360 }}
-                    transition={{ duration: 22, repeat: Infinity, ease: "linear" }}
+                    transition={{ duration: 24, repeat: Infinity, ease: "linear" }}
                   >
                     ✦ born for greatness ✦ turning 24 ✦ loved endlessly ✦&nbsp;
                   </motion.div>
                   <span className="stamp-num">24</span>
                 </div>
-
                 <motion.button
                   className="confetti-btn"
                   onClick={fireConfetti}
-                  whileHover={{ scale: 1.07, boxShadow: "0 0 50px rgba(255,208,122,0.7)" }}
-                  whileTap={{ scale: 0.94 }}
+                  whileHover={{ scale: 1.06 }}
+                  whileTap={{ scale: 0.95 }}
                 >
                   🎊 Celebrate Again!
                 </motion.button>
               </motion.div>
             </section>
 
-            {/* ── FOOTER ── */}
+            {/* FOOTER */}
             <footer className="footer">
               <p className="footer-heart">💛</p>
-              <p className="footer-text">
-                Made with love by{" "}
-                <span className="footer-accent">your best friend</span> 🌙
-              </p>
-              <p className="footer-sub">
-                Happy 24th, {LOVE_NAME} — from {FROM_NAME}, always.
-              </p>
+              <p className="footer-text">Made with love by <span className="footer-accent">your best friend</span> 🌙</p>
+              <p className="footer-sub">Happy 24th, {LOVE_NAME} — from {FROM_NAME}, always.</p>
             </footer>
           </motion.div>
         )}

@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence, useInView, useScroll, useTransform } from "framer-motion";
 import confetti from "canvas-confetti";
-import Tilt from "react-parallax-tilt";
 import Typewriter from "typewriter-effect";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination, EffectCards, Navigation, EffectCreative } from "swiper/modules";
@@ -41,14 +40,7 @@ const PHOTOS = [
     author: "— from your Rua, with love",
     theme: "teal",
   },
-  {
-    src: "/images/P4.jpeg",
-    quote: "You see people for who they truly are — that is the rarest gift.",
-    caption: "You looked at me on my worst, most broken days, and you never once flinched. You held space for every version of me I was ashamed of. No one has ever made me feel as seen, as accepted, as worthy as you have. That is the greatest love I know. 💛",
-    memory: "The eyes that saw all of me",
-    author: "— yours, completely",
-    theme: "gold",
-  },
+
   {
     src: "/images/P5.jpeg",
     quote: "Unguarded, unfiltered — this is the version I love most.",
@@ -73,7 +65,7 @@ const PHOTOS = [
     author: "— always, Rua",
     theme: "rose",
   },
- 
+
   {
     src: "/images/P9.jpeg",
     quote: "Your kindness is the quiet revolution that changes everything around you.",
@@ -225,49 +217,37 @@ function PhotoCard({ photo, index }) {
       animate={inView ? { opacity: 1, y: 0, rotate: 0 } : {}}
       transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1], delay: index * 0.06 }}
       style={{ "--card-accent": themeColors[photo.theme] }}
+      onClick={() => setFlipped(!flipped)}
     >
-      <Tilt
-        tiltMaxAngleX={7}
-        tiltMaxAngleY={7}
-        glareEnable
-        glareMaxOpacity={0.1}
-        glareColor="#ffffff"
-        glareBorderRadius="24px"
-        tiltReverse
-      >
-        <div
-          className={`card-flip-inner ${flipped ? "is-flipped" : ""}`}
-          onClick={() => setFlipped(!flipped)}
-        >
-          {/* FRONT */}
-          <div className="card-face card-front">
-            <div className="photo-frame">
-              <img src={photo.src} alt={`Memory — ${photo.memory}`} loading="lazy" />
-              <div className="photo-overlay" />
-              <div className="photo-num">#{String(index + 1).padStart(2, "0")}</div>
-              <div className="photo-quote-teaser">
-                <span className="quote-icon">❝</span>
-                <em>{photo.quote}</em>
-              </div>
-            </div>
-            <div className="card-front-foot">
-              <p className="memory-tag">✦ {photo.memory}</p>
-              <span className="tap-hint">hold to read 💌</span>
+      <div className={`card-flip-inner ${flipped ? "is-flipped" : ""}`}>
+        {/* FRONT */}
+        <div className="card-face card-front">
+          <div className="photo-frame">
+            <img src={photo.src} alt={`Memory — ${photo.memory}`} loading="lazy" />
+            <div className="photo-overlay" />
+            <div className="photo-num">#{String(index + 1).padStart(2, "0")}</div>
+            <div className="photo-quote-teaser">
+              <span className="quote-icon">❝</span>
+              <em>{photo.quote}</em>
             </div>
           </div>
-
-          {/* BACK */}
-          <div className="card-face card-back">
-            <div className="card-back-content">
-              <p className="back-big-quote">❝</p>
-              <p className="back-italic-quote">{photo.quote}</p>
-              <div className="back-divider" />
-              <p className="back-caption">{photo.caption}</p>
-              <p className="back-author">{photo.author}</p>
-            </div>
+          <div className="card-front-foot">
+            <p className="memory-tag">✦ {photo.memory}</p>
+            <span className="tap-hint">tap to read 💌</span>
           </div>
         </div>
-      </Tilt>
+
+        {/* BACK */}
+        <div className="card-face card-back">
+          <div className="card-back-content">
+            <p className="back-big-quote">❝</p>
+            <p className="back-italic-quote">{photo.quote}</p>
+            <div className="back-divider" />
+            <p className="back-caption">{photo.caption}</p>
+            <p className="back-author">{photo.author}</p>
+          </div>
+        </div>
+      </div>
     </motion.div>
   );
 }
@@ -391,13 +371,6 @@ export default function App() {
                 transition={{ duration: 3, repeat: Infinity }}
               >
                 <span className="cover-cake">🎂</span>
-                <motion.div
-                  className="cover-ring"
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
-                >
-                  ✦ Happy Birthday ✦ Patan Arshad ✦ Turning 24 ✦&nbsp;
-                </motion.div>
               </motion.div>
 
               <motion.h1

@@ -426,7 +426,7 @@ export default function App() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
               >
-                ✦ twenty-four ✦
+                ✦ Happy-Birthday ✦
               </motion.span>
 
               <motion.h1
